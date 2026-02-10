@@ -2,8 +2,8 @@ pipeline {
     agent { label 'ec2' }
 
     environment {
-        DOCKER_IMAGE = "nayan2001/web-app"
-        CONTAINER_NAME = "web"
+        DOCKER_IMAGE = "nayan2001/food-app"
+        CONTAINER_NAME = "food-app"
         DOCKER_CREDS = "docker-cred"
     }
 
@@ -11,19 +11,14 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/silentknight2001/simple-html-page.git'
+                    url: 'https://github.com/silentknight2001/food-delivery-app-devopsify-the-application.git'
             }
         }
-        // stage('git checkout') {
-        //     steps {
-        //         git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/silentknight2001/simple-html-page.git'
-        //     }
-        // }
         stage('Build and tag Docker Image') {
             steps {
                 script{
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
-                       sh 'docker build -t nayan2001/web-app:latest .'
+                       sh 'docker build -t nayan2001/food-app:latest .'
                   }
                 }
             }
@@ -32,7 +27,7 @@ pipeline {
             steps {
                 script{
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
-                       sh 'docker push nayan2001/web-app:latest'
+                       sh 'docker push nayan2001/food-app:latest'
                   }
                 }
             }
