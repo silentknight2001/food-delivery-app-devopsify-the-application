@@ -2,7 +2,7 @@ FROM nginx:alpine
 
 RUN rm -rf /usr/share/nginx/html/*
 
-COPY web_app/ /usr/share/nginx/html/
+COPY application/ /usr/share/nginx/html/
 
 EXPOSE 80
 
