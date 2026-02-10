@@ -1,0 +1,15 @@
+---
+- name: Run script on PROD envirnment
+  hosts: dev_prod
+  become: true
+  tasks:
+    - name: Execute prod environment script
+      script: scripts/prod.sh
+
+- name: Run script on DEV envirnment 
+  hosts: dev_prod
+  become: true
+  tasks:
+    - name: Execute dev environment script
+      script: scripts/dev.sh
+
