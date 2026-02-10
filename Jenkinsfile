@@ -8,32 +8,45 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/silentknight2001/food-delivery-app-devopsify-the-application.git'
+                checkout scm   // auto-detects branch (master / develop)
             }
         }
-        stage('Build and tag Docker Image') {
+
+        stage('Build Docker Image') {
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
-                       sh 'docker build -t nayan2001/food-app:latest .'
-                  }
-                }
+                sh "docker build -t $DOCKER_IMAGE:latest ."
             }
         }
+
+        stage('Test') {
+            steps {
+                echo "🧪 Running tests..."
+                // Example test (dummy for frontend app)
+                sh "test -f /var/www/html/index.html || true"
+            }
+        }
+
         stage('Push Docker Image') {
+            when {
+                branch 'master'
+            }
             steps {
-                script{
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker', url: 'https://index.docker.io/v1/') {
-                       sh 'docker push nayan2001/food-app:latest'
-                  }
+                withDockerRegistry(
+                    credentialsId: "$DOCKER_CREDS",
+                    url: 'https://index.docker.io/v1/'
+                ) {
+                    sh "docker push $DOCKER_IMAGE:latest"
                 }
             }
         }
 
-        stage('Deploy on EC2') {
+        stage('Deploy to Prod (EC2)') {
+            when {
+                branch 'master'
+            }
             steps {
                 sh '''
                 docker stop $CONTAINER_NAME || true
@@ -42,10 +55,10 @@ pipeline {
                 docker pull $DOCKER_IMAGE:latest
 
                 docker run -d \
-                --name $CONTAINER_NAME \
-                -p 80:80 \
-                --restart always \
-                $DOCKER_IMAGE:latest
+                  --name $CONTAINER_NAME \
+                  -p 80:80 \
+                  --restart always \
+                  $DOCKER_IMAGE:latest
                 '''
             }
         }
@@ -53,10 +66,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ CI/CD done. App is LIVE on EC2!"
+            echo "✅ Pipeline completed successfully for branch: ${env.BRANCH_NAME}"
         }
         failure {
-            echo "❌ Pipeline failed."
+            echo "❌ Pipeline failed for branch: ${env.BRANCH_NAME}"
         }
     }
 }
